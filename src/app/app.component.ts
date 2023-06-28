@@ -4,6 +4,8 @@ import { BaseChartDirective } from 'ng2-charts';
 import 'chartjs-plugin-annotation';
 import {HeartrateService} from "./heartrate.service";
 import {Metric} from "./metric";
+import {FormGroup, Validators} from "@angular/forms";
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app',
