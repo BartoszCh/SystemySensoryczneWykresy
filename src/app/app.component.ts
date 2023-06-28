@@ -2,6 +2,8 @@ import { Component, ViewChild } from '@angular/core';
 import { ChartConfiguration, ChartEvent, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import 'chartjs-plugin-annotation';
+import {HeartrateService} from "./heartrate.service";
+import {Metric} from "./metric";
 
 @Component({
   selector: 'app',
@@ -10,44 +12,41 @@ import 'chartjs-plugin-annotation';
 })
 export class AppComponent {
 
+  hrData: Metric[] = [];
+
   public lineChartData: ChartConfiguration['data'] = {
     datasets: [
       {
-        data: [ 65, 59, 80, 81, 56, 55, 40 ],
-        label: 'Series A',
-        backgroundColor: 'rgba(148,159,177,0.2)',
-        borderColor: 'rgba(148,159,177,1)',
-        pointBackgroundColor: 'rgba(148,159,177,1)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(148,159,177,0.8)',
-        fill: 'origin',
+        data: [],
+        label: 'Heart Rate',
+        backgroundColor: 'rgba(0,95,255)',
+        borderColor: 'rgba(0,95,255)',
+        pointBackgroundColor: 'rgba(0,95,255)',
+        pointHoverBorderColor: 'rgba(0,95,255)',
+        borderWidth: 0,
       },
       {
-        data: [ 28, 48, 40, 19, 86, 27, 90 ],
-        label: 'Series B',
-        backgroundColor: 'rgba(77,83,96,0.2)',
-        borderColor: 'rgba(77,83,96,1)',
-        pointBackgroundColor: 'rgba(77,83,96,1)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(77,83,96,1)',
-        fill: 'origin',
+        data: [],
+        label: 'Acc',
+        backgroundColor: 'rgb(0,199,12)',
+        borderColor: 'rgb(0,199,12)',
+        pointBackgroundColor: 'rgb(0,199,12)',
+        pointHoverBorderColor: 'rgb(0,199,12)',
+        borderWidth: 0,
+
       },
       {
-        data: [ 180, 480, 770, 90, 1000, 270, 400 ],
-        label: 'Series C',
+        data: [],
+        label: 'Temperature',
         yAxisID: 'y-axis-1',
-        backgroundColor: 'rgba(255,0,0,0.3)',
+        backgroundColor: 'rgb(255,163,0)',
         borderColor: 'red',
-        pointBackgroundColor: 'rgba(148,159,177,1)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(148,159,177,0.8)',
-        fill: 'origin',
+        pointBackgroundColor: 'rgb(255,163,0)',
+        pointHoverBorderColor: 'rgb(255,163,0)',
+        borderWidth: 0,
       }
     ],
-    labels: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July' ]
+    labels: [ ]
   };
 
   // @ts-ignore
@@ -108,13 +107,8 @@ export class AppComponent {
     return Math.floor((Math.random() * (i < 2 ? 100 : 1000)) + 1);
   }
 
-  public randomize(): void {
-    for (let i = 0; i < this.lineChartData.datasets.length; i++) {
-      for (let j = 0; j < this.lineChartData.datasets[i].data.length; j++) {
-        this.lineChartData.datasets[i].data[j] = AppComponent.generateNumber(i);
-      }
-    }
-    this.chart?.update();
+  public update(): void {
+    this.updateCharts();
   }
 
   // events
@@ -143,7 +137,7 @@ export class AppComponent {
 
   public changeColor(): void {
     this.lineChartData.datasets[2].borderColor = 'green';
-    this.lineChartData.datasets[2].backgroundColor = `rgba(0, 255, 0, 0.3)`;
+    this.lineChartData.datasets[2].backgroundColor = `rgba(0, 0, 0, 0.1)`;
 
     this.chart?.update();
   }
@@ -155,4 +149,22 @@ export class AppComponent {
 
     this.chart?.update();
   }
+
+  constructor(private hearRateService: HeartrateService) {
+
+  }
+
+  public updateCharts(){
+    this.hearRateService.getAllData().subscribe((data: Metric[]) => {
+      data.forEach((metric) => {
+        this.hrData.push(metric);
+        this.lineChartData.datasets[0].data?.push(metric.heartRate);
+        this.lineChartData.datasets[1].data?.push(metric.acc);
+        this.lineChartData.datasets[2].data?.push(metric.temp);
+        this.lineChartData.labels?.push(metric.createDate);
+      });
+      this.chart?.update();
+    });
+  }
+
 }
